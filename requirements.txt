@@ -1,0 +1,15 @@
+bert-pytorch
+einops
+matplotlib
+networkx
+nltk
+pandas<2.0.0
+regex
+six
+tqdm
+transformers
+evaluate
+rouge_score
+scipy
+pyenchant
+sacremoses
