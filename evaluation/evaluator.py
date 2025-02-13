@@ -6,15 +6,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-
-
 import pandas as pd
 import numpy as np
 import pickle
 import os
 
 import argparse
-from metrics import loadVarCLRE, stats, micro_stats, metricRouge, metricBleu, similarityVarCLR, saveVarCLRE
+from metrics import stats, micro_stats, metricRouge, metricBleu, similarityVarCLR
 
 def loadNLPData(p):
 	with open(p, "rb") as f:
@@ -424,90 +422,12 @@ def findBLensInferenceFile(data_directory, relativePath, nameRun):
 				LF = [l.strip() for l in f.readlines()]
 				LF = [l for l in LF if len(l) > 0]
 				valF1 = float(LF[-1].split(" ")[1])
-		
+
 		if valF1 > bestValF1:
 			bestValF1 = valF1
 			bEpoch = e
-	
+
 	# Return the correspondig inferrences on the test set (pre-computed by -inferBest), as a path from the data directory
 	if "T0" in nameRun:
 		return os.path.join(relativePath, f"LORD-inference-logs-test-nt-{bEpoch}.txt")
 	return os.path.join(relativePath, f"LORD-inference-logs-test-{bEpoch}.txt")
-
-def main():
-	parser = argparse.ArgumentParser(description="Evaluator of BLens and related works")
-	parser.add_argument('-data-dir', '--data-directory', dest="data_directory", default="../../data", help="The directory should contain data and logs used for BLens")
-
-	# data_directory
-	args = parser.parse_args()	
-	data_directory = args.data_directory
-
-	# Load VarCLR embeddings
-	VarCLR_cache = os.path.join(args.data_directory, 'embedding', 'varclrCache')
-	loadVarCLRE(VarCLR_cache)
-
-	pd.set_option("display.precision", 3)
-
-	print("Top 20 predicted words in the cross-binary setting. (Table 2)")
-	evaluation(data_directory, False, False, True, False, 'xflBlensXBinaryData', 'logs/blens/V11-BINARIES-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-169.txt', 'BLens', showLabels=True)
-
-	print("Top 20 words predicted in the cross-project setting. (Table 4)")
-	evaluation(data_directory, False, False, True, False, 'xflBlensXProjectData', 'logs/blens/V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-159.txt', 'BLens', showLabels=True)
-
-	print("Top 20 words predicted in the cross-project setting with their occurences and F1 scores in the strict settings. (Table 4)")
-	evaluation(data_directory, True, True, True, True, 'xflBlensXProjectData', 'logs/blens/V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-159.txt', 'BLens', showLabels=True, showStrict=True)
-
-	print()
-	print("Main results")
-
-
-	binaryExperiments =  [["BLens", 'xflBlensXBinaryData', 'logs/blens/V11-BINARIES-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-169.txt', 'BLens'],
-				["XFL", 'xflBlensXBinaryData', 'logs/xfl/binaries.log', 'XFL'],
-				["BL-S", 'symlmXBinaryData', 'logs/blens/V11-CCS-BINARIES-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-199.txt',  'BLens'],
-				["SymLM", 'symlmXBinaryData', 'logs/symlm/binaries/test_evaluation_input.txt', 'SymLM'],
-				["BL-A", 'asmdepictorXBinaryData', 'logs/blens/V11-ASIACCS-BINARIES-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-179.txt',  'BLens'],
-				["AsmDepictor", 'asmdepictorXBinaryData', 'logs/asmdepictor/nlp_bin_asm.csv', 'AsmDepictor']]
-
-	projectExperiments =  [["BLens", 'xflBlensXProjectData', 'logs/blens/V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-159.txt', 'BLens'],
-				["XFL", 'xflBlensXProjectData', 'logs/xfl/projects.log', 'XFL'],
-				["BL-S", 'symlmXProjectData', 'logs/blens/V11-CCS-PROJECTS-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-189.txt',  'BLens'],
-				["SymLM", 'symlmXProjectData', 'logs/symlm/projects/test_evaluation_input.txt', 'SymLM'],
-				["BL-A", 'asmdepictorXProjectData', 'logs/blens/V11-ASIACCS-PROJECTS-NO+UNK-DECODER+MULTI-LONG++/LORD-inference-logs-test-159.txt',  'BLens'],
-				["AsmDepictor", 'asmdepictorXProjectData', 'logs/asmdepictor/nlp_proj_asm.csv', 'AsmDepictor']]
-
-	A = (False, False, False, False, [("cross-binary", '(Table 1)', binaryExperiments), ("cross-project", '(Table 3)', projectExperiments)])
-	B = (True, False, True, False,  [("intermediate_strict_setting", '(Section 6.4)', projectExperiments)])
-	C = (True, True, True, True,  [("strict_setting", '(Table 5)', projectExperiments)])
-
-	for (filterDuplicates, FilterLabels, filterFree, filterExtra, xps) in [A,B,C]:
-		for (stitle, table, experiments) in xps:
-			print("Setting:", stitle, table)
-			df = makeDataFrame(data_directory, filterDuplicates, FilterLabels, filterFree, filterExtra, experiments)
-			print(df)
-			collectCSV(data_directory, filterDuplicates, FilterLabels, filterFree, filterExtra, experiments, f"{stitle}.csv")
-			print()
-			print()
-
-	print()
-	print("Ablation Study")
-
-	A0 = ("COMBO (Table 6)", [('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+', "BLens"), ('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-NO+COCA+V2', "BL-OP")])
-	A1 = ("Input embeddings (Table 7)", [('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-DEXTER', "D"), ('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-PALMTREE', "P"), ('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-CLAP', "C"), ('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-PALMTREE+DEXTER', "P+D"),('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-Clap+Palmtree', "C+P"),('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+-CLAP+DEXTER', "C+D"),('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+', "C+P+D")])
-	A2 = ("LORD (Table 8)", [('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+', "LORD"),('V11-PROJECTS-NO+UNK-DECODER+SIMPLE-LONG+', "SIMPLE"),('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+', "LORD-T0"),('V11-PROJECTS-NO+UNK-DECODER+SIMPLE-LONG+', "SIMPLE-T0"), ('V11-PROJECTS-NO+UNK-DECODER+MULTI-LONG+', "COMBO")])
-
-	for (title, experiments) in [A0, A1, A2]:
-		print(title)
-
-		experimentsS = []
-		for (run, nameRun) in  experiments:
-			experimentsS += [(nameRun, "xflBlensXProjectData", findBLensInferenceFile(data_directory, 'logs/blens/'+run, nameRun), "BLens")]
-
-		df = makeDataFrame(data_directory, False, False, False, False, experimentsS)
-		print(df)
-		print()
-
-	# Save new VarCLR embeddings
-	saveVarCLRE(VarCLR_cache)
-
-if __name__ == '__main__':
-	main()

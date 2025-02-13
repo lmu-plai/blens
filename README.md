@@ -11,6 +11,7 @@ The artifact contains:
 - [data]`data/embedding/varclrCache`: Pre-computed VarCLR embeddings
 - [data]`data/tokenizer/`: Tokenizers for both cross-binary and cross-project setting
 - [code]`code/evaluation/`: Source code to evaluate BLens and other methods based on logs
+- [code]`code/configs/`: Configuration files for BLens hyperparameters
 - [code]`code/`: Source code to train new BLens models and evaluate them
 - [document]`INSTALL.md`: Instructions to install the environment
 - [document]`requirements.txt`: Packages required to install the environment
@@ -28,13 +29,13 @@ The artifact contains:
 }
 ```
 
-For the artifact citation, please refer to the Zenodo record.
+For the artifact citation, please refer to the [Zenodo record](https://doi.org/10.5281/zenodo.14713022).
 
 \*: Equal contributions
 
 ## Data Directory
 
-Pre-computed embeddings, datasets, tokenizers and logs are contained in the `data` folder from the corresponding Zenodo record.
+Pre-computed embeddings, datasets, tokenizers and logs are contained in the `data` folder from the corresponding [Zenodo record](https://doi.org/10.5281/zenodo.14713022).
 Ensure you download and extract this folder before running the code.
 
 ## System Requirements
@@ -57,7 +58,7 @@ The original outputs are provided as logs, and the experimental results can be r
 ```bash
 workon blens
 cd evaluation
-python3 evaluator.py -data-dir=<PATH-TO-DATA-FOLDER> 
+python3 evaluator_all.py -data-dir=<PATH-TO-DATA-FOLDER> 
 ```
 The results will be printed to stdout, with each table explicitly labeled to indicate its corresponding table in the paper.
 
@@ -67,36 +68,35 @@ To initiate training for new models, use the `RunExp.py` script. Specify the exp
 
 ```bash
 workon blens
-CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> --cross-binary --symlm-subdataset -pretrain
+CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> -d=test --cross-binary --symlm-subdataset -pretrain
 ```
 
-This creates an experiment folder with a random name, here `d9e177dd499023f4`, inside `PATH-TO-DATA-FOLDER/xp/`.
+This creates an experiment folder with the name `test`, inside `PATH-TO-DATA-FOLDER/xp/`.
 Once initiated, the decoder fine-tuning can take place:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3 RunExp.py --data-dir=<PATH-TO-DATA-FOLDER> -d=d9e177dd499023f4 --cross-binary --symlm-subdataset -train
+CUDA_VISIBLE_DEVICES=0 python3 RunExp.py --data-dir=<PATH-TO-DATA-FOLDER> -d=test --cross-binary --symlm-subdataset -train
 ```
 Both the pre-training and fine-tuning phases last for 200 epochs. Every 10 epochs during fine-tuning, confidence thresholds are evaluated to find the optimal threshold according to the F1 score on the validation set. The model is then saved along with its threshold. Note that in the ablation study, each phase has 80 epochs, and we obtain a confidence threshold as well as a model every four epochs.
 
 To infer function names on the test set with the best model on the validation set:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> -d=d9e177dd499023f4 --cross-binary --symlm-subdataset -inferBest
+CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> -d=test --cross-binary --symlm-subdataset -inferBest
 ```
 
 To execute the entire process in one run:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> --cross-binary --symlm-subdataset -pretrain -train -inferBest
+CUDA_VISIBLE_DEVICES=0 python3 RunExp.py -data-dir=<PATH-TO-DATA-FOLDER> -d=test --cross-binary --symlm-subdataset -pretrain -train -inferBest
 ```
 
 The script provides a few more options:
 
+- **Hyperparameters configuration**: Specify with `-config`a configuation filename (e.g., `ablation-simple.json`) inside the `configs` folder to set hyperparameters such as the the usage of COMBO pre-training and the LORD decoder, the number of epochs and more.
 - **Resume training**: Use `-loadEpoch` to continue training from a specific epoch.
-- **Inference without a threshold**: Add `-reinferAllNoThreshold` for inferring function names without applying a threshold.
+- **Inference without a threshold**: Add `-inferT0` for inferring function names without applying a threshold and `-reinferAllNoThreshold` for doing that after training a model with a threshold.
 - **Inference with COMBO native decoder**: Add `-inferCOMBO` to infer names using the COMBO native decoder.
-
-Additionally, you can modify hyperparameters such as the number of epochs, GPU usage, and the number of threads within the script's dictionaries.
 
 ---
 
@@ -107,8 +107,13 @@ To evaluate new models, use the `new_experiments_evaluator.py` script.
 ```bash
 workon blens
 cd evaluation
-python3 new_experiments_evaluator.py -data-dir=<PATH-TO-DATA-FOLDER> -d=d9e177dd499023f4 --cross-binary --symlm-subdataset
+python3 new_experiments_evaluator.py -data-dir=<PATH-TO-DATA-FOLDER> -d=test --cross-binary --symlm-subdataset
 ```
+
+The script has two options related to the ablation study:
+
+- **Evaluate models without a threshold**: Add `--evaluateNoThreshold` to evaluate a model without the threshold.
+- **Evaluate COMBO native decoder models**: Add `--evaluateComboDecoder` to evaluate a model using the COMBO native decoder.
 
 --- 
 

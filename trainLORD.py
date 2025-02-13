@@ -23,7 +23,7 @@ from COMBO.COMBO import COMBO
 from LORD.LORD import LORD
 from optimizeLORD import optimizeLORD
 
-def trainLORD(directoryXP, params, tokenizer, trainData, valData, testData, val, test, parameters, epochStart=-1):
+def trainLORD(directoryXP, params, tokenizer, trainData, valData, testData, val, test, parameters, epochStart=-1, noThreshold=False):
 	torch.set_num_threads(params['global']['threads'])
 
 	pathCOMBOBase = os.path.join(directoryXP, f"COMBO-Function-0")
@@ -146,7 +146,8 @@ def trainLORD(directoryXP, params, tokenizer, trainData, valData, testData, val,
 				minLoss = lossS
 
 			if((epoch+1)%params["global"]["interval"]==0):
-				optimizeLORD(directoryXP, params, tokenizer, valData, val, specialCode=f"val-{epoch}",load_save=False, combo=combo, lord=lord)
+				if noThreshold == False:
+					optimizeLORD(directoryXP, params, tokenizer, valData, val, specialCode=f"val-{epoch}",load_save=False, combo=combo, lord=lord)
 				torch.save({'lord_scheduler':schedulerLORD.state_dict(), 'lord_model':lord.state_dict(), 'lord_optimizer':optimizerLORD.state_dict(), 'combo_scheduler':schedulerCOMBO.state_dict(), 'combo_model':combo.state_dict(), 'combo_optimizer':optimizerCOMBO.state_dict()}, pathLORD+f"-epoch-{epoch}")
 
 

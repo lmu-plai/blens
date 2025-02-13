@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 import os
 import secrets
 import pickle
+import json
 
 from builder import loadNLPData, loadData
 
@@ -24,22 +25,29 @@ from inferenceLORD import inferenceLORD
 
 from evaluation.evaluateF import evaluateF
 
-
 parser = ArgumentParser()
+
+# Basic test
+parser.add_argument('--basic-test', dest="basic_test", action='store_true', help='The minimal test of BLens functionality.')
+args, _ = parser.parse_known_args()
+
+# Setting
+if not args.basic_test:
+	group = parser.add_mutually_exclusive_group(required=True)
+	group.add_argument('--cross-project', action='store_true', help='Set the setting to cross-project.')
+	group.add_argument('--cross-binary', action='store_true', help='Set the setting to cross-binary.')
 
 # Directories
 parser.add_argument('-data-dir', '--data-directory', dest="data_directory", default="../data", help="The directory should contain data and logs used for BLens")
 parser.add_argument('-d', '--experiment-directory', dest="experiment_directory")
 
-# Setting
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--cross-project', action='store_true', help='Set the setting to cross-project.')
-group.add_argument('--cross-binary', action='store_true', help='Set the setting to cross-binary.')
-
 # Subdataset
 group2 = parser.add_mutually_exclusive_group(required=False)
 group2.add_argument('--symlm-subdataset', action='store_true', help='Employ the subdataset from SymLM pre-processing.')
 group2.add_argument('--asmdepictor-subdataset', action='store_true', help='Employ the subdataset from AsmDepictor pre-processing.')
+
+# Hyper parameters
+parser.add_argument('-config', '--config', dest="config", default="main.json", help="The .json configuration file describing hyper parameters")
 
 # Phases
 parser.add_argument('-pretrain', '--pretrainCOMBO', dest="pretrainCOMBO", action='store_true')
@@ -48,6 +56,9 @@ parser.add_argument('-inferBest', '--inferBest', dest="inferBest", action='store
 
 # Restart from an epoch
 parser.add_argument('-loadEpoch', '--load-epoch',  type=int, dest="load_epoch", default=-1)
+
+# Infer without the threshold (-T0)
+parser.add_argument('-inferT0', '--inferT0', dest="inferT0", action='store_true')
 
 # Reinfer without the threshold (-T0)
 parser.add_argument('-reinferAllNoThreshold', '--reinferAllNoThreshold', dest="reinferAllNoThreshold", action='store_true')
@@ -63,7 +74,14 @@ if args.experiment_directory == None:
 	ID_EXP = secrets.token_hex(nbytes=8)
 else:
 	ID_EXP = args.experiment_directory
-	
+
+if args.basic_test:
+    args.config = "basic-test.json"
+    ID_EXP = 'basic_test'
+    args.cross_project = True
+    args.pretrainCOMBO = True
+    args.trainLORD = True
+    args.inferBest = True
 
 # Load the dataset, the tokenizer and select DEXTER embeddings
 
@@ -87,32 +105,14 @@ else:
 
 	tokenizer_name = 'Tokenizer-Debin-1024-Binaries'
 	dexterForSpit = 'dexterXBinary'
-	
+
 nlpData = loadNLPData(os.path.join(args.data_directory, nlpFold_filename))
 
 with open(os.path.join(args.data_directory, "tokenizer", tokenizer_name), "rb") as f:
 	tokenizer = pickle.load(f)
 
-paramsGlobal = {
-					"threads":16, "cuda":True,
-					"batch_size": 512, "max_tokens": 20, "visual_feature_size": 768, "cosine_annealing_steps": 1,				
-					"dexter" :True, "clap":True,  "palmtree": True,
-					"interval":10,
-					'decoder_type':'lord', # 'lord'/ 'simple'
-					"no_combo":False
-				}
-
-paramsDexter2Seq	= {"patches": 16, "dim_inter": 32}
-paramsClap2Seq		= {"patches": 16, "dim_inter": 48}
-paramsPalmtreeSeq	= {"size": 50, "emb_size":128}
-
-paramsCoCa = {"unimodal_depth" : 6, "multimodal_depth" : 6, "dim_head" : 24, "head":32, 'feedforward_factor': 4, "dropout":0, "final_mlp_depth": 1, "caption_loss_weight": 1., "contrastive_loss_weight": 1., "num_img_queries": 63}
-paramLORD = {'depth': 12, 'head': 32, 'feedforward_factor': 4,  "dropout": 0.1, "final_mlp_depth": 1, 'loss_type':'smooth', "tokens_loss_weight":1, "labels_loss_weight": 0.}
-
-params = {	"global"	:  paramsGlobal,
-			"COMBO"      :  { "learning_rate": 5e-5, "epochs": 200, "max_grad_norm":1, "weight_decay": 0.01, "warmup_percent":1., "Dexter2Seq":paramsDexter2Seq, "Clap2Seq":paramsClap2Seq, "PalmtreeSeq":paramsPalmtreeSeq, "CoCa":paramsCoCa}, 
-			"LORD"       :  {"learning_rate_combo": 1e-5, "learning_rate_lord": 5e-5, "epochs": 200, "max_grad_norm": 1, "weight_decay": 0.01,  "warmup_percent":1., "LORD" : paramLORD}
-		 }
+with open(os.path.join('configs', args.config), "r") as f:
+	params = json.load(f)
 
 if params["global"]["no_combo"]:
 	params["LORD"]["learning_rate_combo"] = params["LORD"]["learning_rate_lord"]
@@ -145,12 +145,17 @@ if params["global"]["palmtree"]:
 	with open(os.path.join(args.data_directory, 'embedding',"palmtree"), 'rb') as f:
 		instructionSequences = pickle.load(f)
 	listOfFEmbeddings += [("palmtree", True, instructionSequences)]
-		
+
 parameters = [tokenizer, params, listOfFEmbeddings]
 
 train = nlpData[0]
 val = nlpData[1]
 test = nlpData[2]
+
+if(args.basic_test):
+	train = nlpData[0][23345:33345]
+	val = nlpData[1][:1024]
+	test = nlpData[2]
 
 trainData = loadData(train, *parameters)
 valData   = loadData(val, *parameters)
@@ -165,7 +170,7 @@ if args.pretrainCOMBO:
 	pretrainCOMBO(directoryXP, params, tokenizer, trainData, valData, parameters)
 
 if args.trainLORD:
-	trainLORD(directoryXP, params, tokenizer, trainData, valData, testData, val, test, parameters, epochStart=args.load_epoch)
+	trainLORD(directoryXP, params, tokenizer, trainData, valData, testData, val, test, parameters, epochStart=args.load_epoch, noThreshold=args.inferT0)
 
 if args.inferBest:
 	bestValF1 = 0
@@ -190,7 +195,7 @@ if args.inferBest:
 
 	inferenceLORD(directoryXP, params, tokenizer, testData, specialCode=f'test-{bEpoch}', bias=bThreshold, epoch=bEpoch)
 
-if args.reinferAllNoThreshold:
+if args.inferT0 or args.reinferAllNoThreshold:
 	for e in range(params['LORD']['epochs']):
 		if (e+1) % params["global"]["interval"] == 0:
 			inferenceLORD(directoryXP, params, tokenizer, valData, specialCode=f'val-nt-{e}', bias=0, epoch=e)

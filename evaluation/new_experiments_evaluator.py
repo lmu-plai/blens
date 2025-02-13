@@ -6,8 +6,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-
-
 import os
 import pandas as pd
 import argparse
@@ -36,7 +34,7 @@ def main():
 	group2.add_argument('--asmdepictor-subdataset', action='store_true', help='Employ the subdataset from AsmDepictor pre-processing.')
 
 	# Ablation parameters
-	parser.add_argument('--evaluateNoTreshold', action='store_true', default=False, help='Evaluate without a threshold (default: False).')
+	parser.add_argument('--evaluateNoThreshold', action='store_true', default=False, help='Evaluate without a threshold (default: False).')
 	parser.add_argument('--evaluateComboDecoder', action='store_true', default=False, help='Evaluate combo decoder (default: False).')
 
 	# Parse the arguments
@@ -67,16 +65,35 @@ def main():
 
 	print('BLens', 'cross-binary setting' if args.cross_binary else 'cross-project setting')
 	print(xp_directory, nameXP)
+	print()
+	print()
 
-	print()
-	print()
+	# Ablations
+	A = []
+	if args.evaluateNoThreshold:
+		A += [("without a threshold", [nameXP+"-T0"])]
+	if args.evaluateComboDecoder:
+		A += [("COMBO decoder", [nameXP+"-COMBO"])]
+
+	if len(A) > 0:
+		print("Ablations")
+		for (title, experiments) in  A:
+			print(title)
+			experimentsS = []
+			for nameRun in  experiments:
+				experimentsS += [(nameRun, nlpData, findBLensInferenceFile(data_directory, xp_directory, nameRun), "BLens")]
+			df = makeDataFrame(data_directory, False, False, False, False, experimentsS)
+			print(df)
+			print()
+		return
+
+	# Main results
 	print("Main results")
-
 	XPs = [[nameXP, nlpData, findBLensInferenceFile(data_directory, xp_directory, nameXP), 'BLens']]
 
 	A = (False, False, False, False, "cross-project")
-	B = (True, False, True, False,  "intermediate_strict setting")
-	C = (True, True, True, True,  "strict_setting")
+	B = (True, False, True, False,  "intermediate strict")
+	C = (True, True, True, True,  "strict")
 
 	if args.cross_project:
 		settings = [A,B,C]
@@ -88,31 +105,9 @@ def main():
 		print("Setting:", stitle)
 		df = makeDataFrame(data_directory, filterDuplicates, FilterLabels, filterFree, filterExtra, XPs)
 		print(df)
-		collectCSV(data_directory, filterDuplicates, FilterLabels, filterFree, filterExtra, XPs, f"{nameXP}_{stitle}.csv")
 		print()
 
-	A = []
-	if args.evaluateNoTreshold:
-		A += [("without a threshold", [nameXP+"-T0"])]
-	if args.evaluateComboDecoder:
-		A += [("COMBO decoder", [nameXP+"-COMBO"])]
 
-	if len(A) == 0:
-		return
-
-	print()
-	print()		
-	print("Ablation")
-
-	for (title, experiments) in  A:
-		print(title)
-		experimentsS = []
-		for nameRun in  experiments:
-			experimentsS += [(nameRun, nlpData, findBLensInferenceFile(data_directory, xp_directory, nameRun), "BLens")]
-		df = makeDataFrame(data_directory, False, False, False, False, experimentsS)
-		print(df)
-		print()
-		
 	# Save new VarCLR embeddings
 	saveVarCLRE(VarCLR_cache)
 

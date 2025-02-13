@@ -1,0 +1,63 @@
+{
+	"global": {
+		"threads": 16,
+		"cuda": true,
+		"batch_size": 512,
+		"max_tokens": 20,
+		"visual_feature_size": 768,
+		"cosine_annealing_steps": 1,
+		"dexter": true,
+		"clap": true,
+		"palmtree": true,
+		"interval": 4,
+		"decoder_type": "lord",
+		"no_combo": true
+	},
+	"COMBO": {
+		"learning_rate": 5e-5,
+		"epochs": 80,
+		"max_grad_norm": 1,
+		"weight_decay": 0.01,
+		"warmup_percent": 1.0,
+		"Dexter2Seq": {
+			"patches": 16,
+			"dim_inter": 32
+		},
+		"Clap2Seq": {
+			"patches": 16,
+			"dim_inter": 48
+		},
+		"PalmtreeSeq": {
+			"size": 50,
+			"emb_size": 128
+		},
+		"CoCa": {
+			"unimodal_depth": 6,
+			"multimodal_depth": 6,
+			"dim_head": 24,
+			"head": 32,
+			"feedforward_factor": 4,
+			"dropout": 0,
+			"final_mlp_depth": 1,
+			"caption_loss_weight": 1.0,
+			"contrastive_loss_weight": 1.0,
+			"num_img_queries": 63
+		}
+	},
+	"LORD": {
+		"learning_rate_combo": 1e-5,
+		"learning_rate_lord": 5e-5,
+		"epochs": 80,
+		"max_grad_norm": 1,
+		"weight_decay": 0.01,
+		"warmup_percent": 1.0,
+		"LORD": {
+			"depth": 12,
+			"head": 32,
+			"feedforward_factor": 4,
+			"dropout": 0.1,
+			"final_mlp_depth": 1,
+			"loss_type": "smooth"
+		}
+	}
+}
