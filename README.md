@@ -56,7 +56,7 @@ After installation, follow the instructions in Section A.4 of the artifact appen
 
 ## Usage
 
-### Reproduce the results of BLens and Other Methods
+### Evaluate logs
 
 
 The original outputs are provided as logs, and the experimental results can be reproduced using the `evaluator.py` script.
@@ -106,7 +106,7 @@ The script provides a few more options:
 
 ---
 
-## Evaluating New Models
+### Evaluating New Models
 
 To evaluate new models, use the `new_experiments_evaluator.py` script.
 
