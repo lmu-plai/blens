@@ -45,8 +45,14 @@ Ensure you download and extract this folder before running the code.
 
 ## Installation Instructions
 
-Please follow the detailed installation instructions provided in [INSTALL.md](INSTALL.md).
+1. Clone the package from the [GitHub repository](https://github.com/lmu-plai/blens).  
+2. Download and extract `data.tar.gz` from the [Zenodo record](https://doi.org/10.5281/zenodo.14713022).  
+3. Follow the installation steps in [`INSTALL.md`](INSTALL.md).  
+4. Refer to Section A3.2 in the artifact appendix to perform a basic test and verify the installation.
 
+## Reproducing Results
+
+After installation, follow the instructions in Section A.4 of the artifact appendix to run experiments and verify the major claims.
 
 ## Usage
 
