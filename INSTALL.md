@@ -2,6 +2,9 @@
 
 This document provides a step-by-step guide to set up the necessary environment and dependencies for BLens.
 
+If you encounter any issues during the installation, we advice you to consult each tool's troubleshooting documentation.
+If additional problems arise, the `requirements.txt` file may offer guidance, and feel free to reach out for further assistance.
+
 ## Prerequisites
 
 
@@ -94,5 +97,3 @@ Edit `setup.py` so that the `transformers` package has no version requirement. T
 pip install -e .
 ```
 
-
-If you encounter any issues during the installation, please refer to the troubleshooting section of each respective tool's documentation.
