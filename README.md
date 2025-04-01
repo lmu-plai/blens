@@ -19,7 +19,7 @@ The artifact contains:
 - [document]`INSTALL.md`: Instructions to install the environment
 - [document]`requirements.txt`: Packages required to install the environment
 - [document]`README.md`: Instructions to use the artifact
-- [document]`appendices/`: Details about the implementation and the strict experimental setting.
+- [document]`appendices/`: The artifact appendix and details about the implementation and the strict experimental setting.
 
 **Citation**:
 ```bibtex
@@ -51,11 +51,11 @@ Ensure you download and extract this folder before running the code.
 1. Clone the package from the [GitHub repository](https://github.com/lmu-plai/blens).  
 2. Download and extract `data.tar.gz` from the [Zenodo record](https://doi.org/10.5281/zenodo.14713022).  
 3. Follow the installation steps in [`INSTALL.md`](INSTALL.md).  
-4. Refer to Section A3.2 in the artifact appendix to perform a basic test and verify the installation.
+4. Refer to Section A3.2 in the [artifact appendix](appendices/artifact_appendix.pdf) to perform a basic test and verify the installation.
 
 ## Reproducing Results
 
-After installation, follow the instructions in Section A.4 of the artifact appendix to run experiments and verify the major claims.
+After installation, follow the instructions in Section A.4 of the [artifact appendix](appendices/artifact_appendix.pdf) to run experiments and verify the major claims.
 
 ## Usage
 
