@@ -1,7 +1,10 @@
 # BLens: Contrastive Captioning of Binary Functions using Ensemble Embedding
 **Authors**: Tristan Benoit\*, Yunru Wang\*, Moritz Dannehl, Johannes Kinder
 
-This is the artifact accompanying the paper _BLens: Contrastive Captioning of Binary Functions using Ensemble Embedding_, appearing in the 34th USENIX Security Symposium, August 13-15, in Seattle, WA, USA (USENIX Security 2025).
+This is the artifact accompanying the paper
+ _BLens: Contrastive Captioning of Binary Functions using Ensemble Embedding_,
+  appearing in the 34th USENIX Security Symposium [\[PDF\]](https://www.plai.ifi.lmu.de/publications/usenixsecurity25-blens.pdf), August 13-15, in Seattle, WA, USA (USENIX Security 2025).
+
 
 The artifact contains:
 
