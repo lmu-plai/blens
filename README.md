@@ -20,6 +20,7 @@ The artifact contains:
 - [document]`requirements.txt`: Packages required to install the environment
 - [document]`README.md`: Instructions to use the artifact
 - [document]`appendices/`: The artifact appendix and details about the implementation and the strict experimental setting.
+- [document]`PRETRAINED.md`: Instructions to install pretrained models and perform new inferences
 
 **Citation**:
 ```bibtex

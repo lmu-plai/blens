@@ -70,14 +70,16 @@ def collate_fn(batch, pad_id, key=None):
 				batch = batch2
 		return default_collate(batch)
 
-def loadData(nlpData, tokenizer, params, otherData):
-	tokenizer.transform(nlpData, params['global']['max_tokens'])
+def loadData(nlpData, tokenizer, params, otherData, tokenizeGT=True):
+	if tokenizeGT:
+		tokenizer.transform(nlpData, params['global']['max_tokens'])
 
 	all_data = []
 	for j in tqdm(range(len(nlpData))):
 
-		(binPath, vaddr, realFunctionName, functionName, tokens, bId, fId) = nlpData[j]  # [binPath, vaddr, real_name, name, vaddr, bId, fId]
-
+		(binPath, vaddr, realFunctionName, functionName, _, bId, fId) = nlpData[j]  # [binPath, vaddr, real_name, name, vaddr, bId, fId]
+		tokens = [1, 2]
+		
 		# remove unknown tokens and pad again
 		tokens = [t for t in tokens if t != tokenizer.unk_token_id]
 		while len(tokens) < params['global']['max_tokens'] + 2:
@@ -99,33 +101,34 @@ def loadData(nlpData, tokenizer, params, otherData):
 		data['caption_hash'] =  int(hashlib.sha256(data["caption_tokens"].numpy().data).hexdigest(), 16) % (10 ** 8)
 
 		for (name, key, d) in otherData:
-			if name in ["clap"]:
-				if (binPath, vaddr) not in d.keys():
-					data[name] =  torch.zeros(768, dtype = torch.float)
-					continue
 
-			elif(key and (binPath, vaddr, realFunctionName) not in d.keys()):
-				if name == "palmtree":
-					data["palmtree"] =  torch.zeros(1, params['COMBO']['PalmtreeSeq']['emb_size'], dtype = torch.float)
-					continue
-				else:
-					data["dexter"] =  torch.zeros(512, dtype = torch.float)
-					continue
+			if name == "clap" and (binPath, vaddr) not in d.keys():
+				data["clap"] =  torch.zeros(768, dtype = torch.float)
+				continue
 
+			elif name == "palmtree" and ((binPath, vaddr, realFunctionName) not in d.keys()) and ((binPath, vaddr) not in d.keys()):
+				data["palmtree"] =  torch.zeros(params['COMBO']['PalmtreeSeq']['size'],  params['COMBO']['PalmtreeSeq']['emb_size'], dtype = torch.float)
+				continue
+			
 			if key == True:
+				# CLAP
 				if name in ["clap"]:
 					data[name] = d[(binPath, vaddr)]
-				else:
+				# PalmTree first shape
+				elif (binPath, vaddr, realFunctionName) in d.keys():
 					data[name] = d[(binPath, vaddr, realFunctionName)]
+				# PalmTree second shape
+				else:
+					data[name] = d[(binPath, vaddr)]
 			else:
+				# DEXTER
 				data[name] = d[fId]
 
 			if name == "palmtree":
 				data[name] = [emb for addr, emb in data[name]][:params['COMBO']['PalmtreeSeq']['size']]
-				if len(data[name]) == 0:
-					data["palmtree"] = torch.zeros(1, params['COMBO']['PalmtreeSeq']['emb_size'], dtype = torch.float)
-				else:
-					data["palmtree"] = torch.stack(data[name])
+				while len(data[name]) < params['COMBO']['PalmtreeSeq']['size']:
+					data[name] += [torch.zeros(128, dtype = torch.float)]				
+				data[name] = torch.stack(data[name])
 
 			elif type(data[name]) is np.ndarray:
 				assert not np.any(np.isnan(data[name]))
@@ -137,7 +140,6 @@ def loadData(nlpData, tokenizer, params, otherData):
 		all_data.append(data)
 
 	data = collate_fn(all_data, tokenizer.pad_token_id)
-
 	return data
 
 

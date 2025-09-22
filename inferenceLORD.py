@@ -19,6 +19,8 @@ from COMBO.COMBO import COMBO
 from LORD.LORD import LORD
 from decoding import decoding_bias
 
+# Lots of bad changes to adapt weights <!>
+
 def inferenceLORD(directoryXP, params, tokenizer, testData, specialCode='', load_save=True, combo=None, lord=None, bias=0, epoch=-1):
 	torch.set_num_threads(16)
 	original_stdout = sys.stdout
