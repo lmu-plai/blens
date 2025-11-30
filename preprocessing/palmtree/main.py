@@ -19,16 +19,18 @@ from tqdm import tqdm
 
 from PalmTree import PalmTreeBasicBlockEncoder
 
-def handle_op(project, op_str, cur_addr, func):	
-	# addr is memory address
-	str_addrs = set([int(addr) for addr, string in func.string_references()])
-	# ,
+pattern = re.compile(r'.*(\[rip\s*\+\s*(\S+)h\])')
+pattern2 = re.compile(r'.*([0-9a-fA-F]{6}h)')
+
+
+def handle_op(project, op_str, cur_addr, str_addrs):	
+	global pattern, pattern2
+
 	op_str = op_str.replace(',', '')
 	op_str = op_str.replace('*', ' * ')
 	op_str = op_str.replace('ptr', '')
 	# [] space and solve mem addr
 	if('[' in op_str):
-		pattern = re.compile(r'.*(\[rip\s*\+\s*(\S+)h\])')
 		match = pattern.match(op_str)
 		if(match):
 			offset = int(match.group(2), 16)
@@ -38,15 +40,15 @@ def handle_op(project, op_str, cur_addr, func):
 			except Exception as e:
 				pass
 			else:
-				mem_addr = cur_rip + offset
+				mem_addr = cur_rip + offset		
 				if(mem_addr in str_addrs):
 					op_str = op_str.replace(match.group(1), 'string')
+
 		op_str = op_str.replace('[', '[ ')
 		op_str = op_str.replace(']', ' ]')
 
 	# xxxxxxh
-	pattern = re.compile(r'.*([0-9a-fA-F]{6}h)')
-	match = pattern.match(op_str)
+	match = pattern2.match(op_str)
 	if(match):
 		# match of symbol and address
 		content = match.group(1)
@@ -64,6 +66,8 @@ def handle_op(project, op_str, cur_addr, func):
 
 
 def get_bb_seq(project, func):
+	str_addrs = set([int(addr) for addr, string in func.string_references()])
+	
 	seq = []
 	'''
 	format should be like:
@@ -81,9 +85,11 @@ def get_bb_seq(project, func):
 		for ins in b.insns:
 			temp_ins = []
 			temp_ins.append(ins.mnemonic)
-			temp_ins.append(handle_op(project, ins.op_str, ins.address, func))
+			temp_ins.append(handle_op(project, ins.op_str, ins.address, str_addrs))
 			bseq.append(' '.join(temp_ins))
 		seq.append((block.addr, bseq))
+		if len(seq) >= 50:
+			break
 	return seq
 
 def basicBlockEmbedding(nlpData, palmtree, cpu):
@@ -96,32 +102,39 @@ def basicBlockEmbedding(nlpData, palmtree, cpu):
 			exportedEmbeddings[binPath, vaddr] = True
 		
 	palmtreeBB = PalmTreeBasicBlockEncoder(os.path.join(palmtree,"pretrained_palmtree"), os.path.join(palmtree,"vocab"), cpu)
+
 	embeddings = {}
 
 	for binPath in binaries:
+		
 		
 		try:			
 			project = angr.Project(binPath, load_options={'auto_load_libs': False})
 			cfg = project.analyses.CFGFast()
 			base_addr = project.loader.main_object.mapped_base
+			
+			print(binPath, len(cfg.kb.functions))
 
 			for vaddr in tqdm(cfg.kb.functions):
+				key = (binPath, vaddr - base_addr)
+				if not(key in exportedEmbeddings):
+					continue
+
 				try:
 					seq = get_bb_seq(project, cfg.kb.functions[vaddr])
-					key = (binPath, vaddr - base_addr)
-					if not(key in exportedEmbeddings):
-						continue
+				except Exception as e:
+					print(e)
+				else:
 					embeddings[key] = []
 					for (vaddrBB, bbSeq) in seq:
 						bb_embedding = palmtreeBB.encode(bbSeq)
 						embeddings[key] += [(vaddrBB-base_addr, bb_embedding)]
-				except Exception as e:
-					print(e)
 
 		except Exception as e:
 			print(e)
-
+	
 	return embeddings
+
 
 if __name__=="__main__":
 	parser = argparse.ArgumentParser(
@@ -144,5 +157,5 @@ if __name__=="__main__":
 	
 	print('PalmTree Basic Bloc Embeddings')
 	embeddings = basicBlockEmbedding(nlpData, args.palmtree, args.cpu)
-	with open(args.output, 'wb') as f:
-			pickle.dump(embeddings, f)
+	with open(args.palmtree, 'wb') as f:
+		pickle.dump(embeddings, f)

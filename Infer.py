@@ -138,5 +138,5 @@ if target != None:
 data = []
 for j, [_, output] in enumerate(pairs):
 	(binPath, vaddr, realFunctionName, functionName, tokens, bId, fId) = nlpData[2][j]
-	print(binPath, vaddr, realFunctionName, functionName, '->', output)
+	print(binPath, vaddr, '->', output)
 

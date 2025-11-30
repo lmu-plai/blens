@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # ---------- Config ----------
-XFL="/home/tristan/Documents/App/XFL/xfl-r/XFL"
+XFL="/home/tristan/Documents/App/xfl/xfl-r/XFL"
 IDAB="/home/tristan/Documents/idapro-7.5/idat64"
 BLENS="/home/tristan/Documents/App/blens"
 BLENS_DATA="/home/tristan/Documents/App/data"
 
 # ---------- Input ----------
-TARGET="${XFL}/data/binaries/c_intro_s"
+TARGET="${XFL}/data/binaries/"
 
 # ---------- Other variables ----------
 ENV_XFL="XFL4"
