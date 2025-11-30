@@ -77,10 +77,11 @@ def loadData(nlpData, tokenizer, params, otherData, tokenizeGT=True):
 	all_data = []
 	for j in tqdm(range(len(nlpData))):
 
-		(binPath, vaddr, realFunctionName, functionName, _, bId, fId) = nlpData[j]  # [binPath, vaddr, real_name, name, vaddr, bId, fId]
-		tokens = [1, 2]
+		(binPath, vaddr, realFunctionName, functionName,_tokens, bId, fId) = nlpData[j]  # [binPath, vaddr, real_name, name,_tokens, bId, fId]
+		if tokenizeGT == False:
+			tokens = [1, 2]
 		
-		# remove unknown tokens and pad again
+		# Remove unknown tokens and pad again
 		tokens = [t for t in tokens if t != tokenizer.unk_token_id]
 		while len(tokens) < params['global']['max_tokens'] + 2:
 			tokens += [0]
