@@ -1,0 +1,24 @@
+name: BLens
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pip
+  - pip:
+      - bert-pytorch
+      - einops
+      - matplotlib
+      - networkx
+      - nltk
+      - pandas
+      - regex
+      - six
+      - tqdm
+      - transformers
+      - evaluate
+      - rouge_score
+      - scipy
+      - pyenchant
+      - sacremoses
+      - angr
