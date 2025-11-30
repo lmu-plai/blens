@@ -5,7 +5,7 @@ set -euo pipefail
 XFL="/home/tristan/Documents/App/xfl/xfl-r/XFL"
 IDAB="/home/tristan/Documents/idapro-7.5/idat64"
 BLENS="/home/tristan/Documents/App/blens"
-BLENS_DATA="/home/tristan/Documents/App/data"
+BLENS_DATA="/home/tristan/Documents/App/pretrained_data"
 
 # ---------- Input ----------
 TARGET="${XFL}/data/binaries/"
