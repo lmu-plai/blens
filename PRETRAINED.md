@@ -106,14 +106,9 @@ python -c "import nltk; nltk.download('words'); nltk.download('stopwords')"
 
 ## 7. Download Weights and Tables
 
-Pretrained weights and PostgreSQL dumps are available on the associated Zenodo record.
+Download and extract pretrained_data.tar.gz from the [Zenodo record](https://doi.org/10.5281/zenodo.14713022).
 
-```shell
-wget TODO
-unzip BLens_DEXTER_pretrained.zip
-
-```
-This will create the BLens data folder (separate from the repository).
+This will create a special BLens data folder (separate from the repository).
 
 Restore the database with known library prototypes (required for DEXTER):
 
