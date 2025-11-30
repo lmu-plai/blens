@@ -8,19 +8,25 @@ This is the artifact accompanying the paper
 
 The artifact contains:
 
-- [data]`data/`: Train, validation and test splits used for both cross-binary and cross-project settings
-- [data]`data/embedding/`: Pre-computed DEXTER, CLAP, and PalmTree embeddings
-- [data]`data/logs/`: Pre-computed logs for BLens, XFL, SymLM, AsmDepictor, HexT5
-- [data]`data/embedding/varclrCache`: Pre-computed VarCLR embeddings
-- [data]`data/tokenizer/`: Tokenizers for both cross-binary and cross-project setting
-- [code]`code/evaluation/`: Source code to evaluate BLens and other methods based on logs
-- [code]`code/configs/`: Configuration files for BLens hyperparameters
-- [code]`code/`: Source code to train new BLens models and evaluate them
-- [document]`INSTALL.md`: Instructions to install the environment
-- [document]`requirements.txt`: Packages required to install the environment
-- [document]`README.md`: Instructions to use the artifact
-- [document]`appendices/`: The artifact appendix and details about the implementation and the strict experimental setting.
-- [document]`PRETRAINED.md`: Instructions to install pretrained models and perform new inferences
+- [data]`data/`: Train, validation, and test splits used for both cross-binary and cross-project settings  
+- [data]`data/embedding/`: Pre-computed DEXTER, CLAP, and PalmTree embeddings  
+- [data]`data/logs/`: Pre-computed logs for BLens, XFL, SymLM, AsmDepictor, and HexT5  
+- [data]`data/embedding/varclrCache`: Pre-computed VarCLR embeddings  
+- [data]`data/tokenizer/`: Tokenizers for both cross-binary and cross-project settings  
+- [pre-trained models]`pretrained_data/embedding/`: Placeholder for DEXTER, CLAP, and PalmTree embeddings  
+- [pre-trained models]`pretrained_data/PalmTree`: Placeholder for PalmTree weights  
+- [pre-trained models]`pretrained_data/res`: DEXTER weights  
+- [pre-trained models]`pretrained_data/Tables`: PostgreSQL dump of known library prototypes, required for DEXTER  
+- [pre-trained models]`pretrained_data/tokenizer/`: Tokenizers for both cross-binary and cross-project settings  
+- [pre-trained models]`pretrained_data/xp/`: BLens pre-trained models
+- [code]`code/evaluation/`: Source code to evaluate BLens and other methods based on logs  
+- [code]`code/configs/`: Configuration files for BLens hyperparameters  
+- [code]`code/`: Source code to train new BLens models and evaluate them  
+- [document]`INSTALL.md`: Instructions for installing the environment  
+- [document]`requirements.txt`: Packages required to install the environment  
+- [document]`README.md`: Instructions to use the artifact  
+- [document]`appendices/`: The artifact appendix and details about the implementation and the strict experimental setting  
+- [document]`PRETRAINED.md`: Instructions to install pre-trained models and perform new inferences with them
 
 **Citation**:
 ```bibtex
